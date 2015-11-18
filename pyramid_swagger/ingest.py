@@ -174,6 +174,8 @@ def get_swagger_spec(settings):
     with open(schema_path, 'r') as f:
         spec_dict = simplejson.loads(f.read())
 
+    print spec_dict
+
     return Spec.from_dict(
         spec_dict,
         config=create_bravado_core_config(settings),

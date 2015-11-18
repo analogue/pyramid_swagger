@@ -3,6 +3,7 @@
 Module for automatically serving /api-docs* via Pyramid.
 """
 import simplejson
+import functools
 
 from pyramid_swagger.model import PyramidEndpoint
 
@@ -106,3 +107,37 @@ def build_swagger_20_swagger_dot_json(config):
         route_name='pyramid_swagger.swagger20.api_docs',
         view=view_for_swagger_dot_json,
         renderer='json')
+
+
+def build_swagger_20_endpoints(config):
+
+    def view_for_swagger_dot_json(request):
+        spec = config.registry.settings['pyramid_swagger.schema20']
+        return spec.spec_dict
+
+    return PyramidEndpoint(
+        path='/swagger.json',
+        route_name='pyramid_swagger.swagger20.api_docs',
+        view=view_for_swagger_dot_json,
+        renderer='json')
+
+
+def view_json(request):
+    uri = request.path
+    filename = 'api_docs' + uri
+    with open(filename) as f:
+        return simplejson.loads(f.read())
+
+
+def create_swagger2_endpoints(config):
+    files = config.registry.settings['pyramid_swagger.schema20_files']
+    endpoints = []
+    for filename in files:
+        endpoint = PyramidEndpoint(
+            path='/' + filename,
+            route_name='pyramid_swagger.swagger20.' + filename,
+            view=view_json,
+            renderer='json')
+        endpoints.append(endpoint)
+
+    return endpoints
